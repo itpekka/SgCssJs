@@ -1,12 +1,4 @@
-<!-- SCRIPT 16.2.26 klo 18 --->
 
-    
-// Source - https://stackoverflow.com/q/70821769
-// Posted by brut65, modified by community. See post 'Timeline' for change history
-// Retrieved 2026-02-05, License - CC BY-SA 4.0
-
-/* =========================================================
-   Yleiset toiminnot (dark mode, scroll, menu)  ========================================================= */
 
 function darkFunction() {
   var currentMode = localStorage.getItem("modeIS");
