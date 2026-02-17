@@ -1,4 +1,5 @@
-<!-- STYLET 15.2.26 klo 18 --->
+html { outline: 5px solid red !important; }
+
 
 .white-mode {  
 --CurrentMode:"white-mode";                 /* Current background mode */
