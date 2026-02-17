@@ -1,5 +1,5 @@
 <!-- STYLET 15.2.26 klo 18 --->
-<style>
+
 .white-mode {  
 --CurrentMode:"white-mode";                 /* Current background mode */
 --NextMode:"dark-mode";                     /* Next background mode */    
@@ -49,7 +49,7 @@
     
 } </style>
 
-<style>
+
 .dark-mode {  /* #1c8173 #196c62 #14574e Santerilta */
 --CurrentMode:"dark-mode";                  /* Current background mode */
 --NextMode:"white-mode";                    /* Next background mode */    
