@@ -1,5 +1,5 @@
 <!-- STYLET 15.2.26 klo 18 --->
-<style>
+
 .white-mode {  
 --CurrentMode:"white-mode";                 /* Current background mode */
 --NextMode:"dark-mode";                     /* Next background mode */    
@@ -47,9 +47,8 @@
 --markBG: Yellow;
 --markBGactive: orange;
     
-} </style>
+} 
 
-<style>
 .dark-mode {  /* #1c8173 #196c62 #14574e Santerilta */
 --CurrentMode:"dark-mode";                  /* Current background mode */
 --NextMode:"white-mode";                    /* Next background mode */    
@@ -96,9 +95,9 @@
 --markBG: Yellow;
 --markBGactive: orange;
     
-}</style>
+}
 
-<style> 
+
 :root {                     /* Muut kuin väreihin vaikuttavat yleiset muuttujat */
 --CurrentMode:"white-mode"                  /* Current background mode */
 --NextMode:"dark-mode"                      /* Next background mode */    
@@ -155,7 +154,7 @@
 --imageBottomMargin: 50px;
 --data-underline-size: 70%;
     
-} </style>
+} 
 
 <!--- BACKGROUND VÄRIT ----->
 
