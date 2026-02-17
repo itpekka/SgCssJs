@@ -1,6 +1,5 @@
 <!-- SCRIPT 16.2.26 klo 18 --->
 
-<script> 
     
 // Source - https://stackoverflow.com/q/70821769
 // Posted by brut65, modified by community. See post 'Timeline' for change history
@@ -1755,4 +1754,4 @@ window.prevMatch = prevMatch;
 window.endSearch = endSearch;
 window.handleDatalistSelect = handleDatalistSelect;
 
-</script>
+
