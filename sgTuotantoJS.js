@@ -39,9 +39,6 @@ function scrollFunction() {
   // tyhjä
 }
 
-</script>
-
-<script>
 (function initDefaultsSafe() {
   // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
   function apply() {
@@ -88,8 +85,6 @@ function scrollFunction() {
   }
 })();
 
-</script>
-<script>
 
 function submenuFunction() {
   var currentMode = localStorage.getItem("submenu");
@@ -899,15 +894,4 @@ window.prevMatch = prevMatch;
 window.endSearch = endSearch;
 window.handleDatalistSelect = handleDatalistSelect;
 
-/* === SG aliases (compat) === */
-(function(){
-  try{
-    if (typeof window.searchPanel === "function") {
-      if (typeof window.openSearchPanel !== "function") window.openSearchPanel = window.searchPanel;
-      if (typeof window.startSearchPanel !== "function") window.startSearchPanel = window.searchPanel;
-      if (typeof window.toggleSearchPanel !== "function") window.toggleSearchPanel = window.searchPanel;
-      if (typeof window.searcPanel !== "function") window.searcPanel = window.searchPanel; // common typo support
-    }
-  } catch(e){}
-})();
 </script>
