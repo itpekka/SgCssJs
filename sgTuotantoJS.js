@@ -39,7 +39,7 @@ function scrollFunction() {
   // tyhjä
 }
 
-function initDefaultsSafe() {
+(function initDefaultsSafe() {
   // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
   function apply() {
     if (!document.body) return;
@@ -66,9 +66,9 @@ function initDefaultsSafe() {
   } else {
     apply();
   }
-};
+})();
 
-function forceWhiteInEditor() {
+(function forceWhiteInEditor() {
   function apply() {
     if (!document.body) return;
     if (document.getElementsByClassName("editor-padding").length > 0) {
@@ -83,7 +83,7 @@ function forceWhiteInEditor() {
   } else {
     apply();
   }
-};
+})();
 
 function submenuFunction() {
   var currentMode = localStorage.getItem("submenu");
@@ -108,7 +108,7 @@ function submenuFunction() {
   }
 }
 
-function addDefaultClasses() {
+(function addDefaultClasses() {
   function apply() {
     if (!document.body) return;
     var list = document.body.classList;
@@ -123,7 +123,7 @@ function addDefaultClasses() {
   } else {
     apply();
   }
-};
+})();
 
 function loadArticleClass() {
   if (!document.body) return;
@@ -174,7 +174,7 @@ var originalArticleHTML = null;
 var input = document.getElementById("searchInput");
 
 // 🛑 estä lomakkeen submit (ilman optional chainingia)
-function bindFormSubmitGuard() {
+(function bindFormSubmitGuard() {
   if (!input) return;
   var form = null;
   if (input.closest) form = input.closest("form");
@@ -183,10 +183,10 @@ function bindFormSubmitGuard() {
   form.addEventListener("submit", function (e) {
     e.preventDefault();
   });
-};
+})();
 
 // ⌨️ manuaalinen syöttö → ENTER
-function bindInputHandlers() {
+(function bindInputHandlers() {
   if (!input) return;
 
   input.addEventListener("keydown", function (e) {
@@ -201,7 +201,7 @@ function bindInputHandlers() {
     // jos haluat automaattisen startSearchin, avaa tästä
     // if (input.value && input.value.replace(/^\s+|\s+$/g, "")) startSearch();
   });
-};
+})();
 
 document.addEventListener("DOMContentLoaded", function () {
   originalHTML = document.body ? document.body.innerHTML : null;
@@ -894,3 +894,35 @@ window.endSearch = endSearch;
 window.handleDatalistSelect = handleDatalistSelect;
 
 </script>
+
+// --- SG PUBLIC API / ALIASES (pidä aina JS:n lopussa) ---
+(function () {
+  // 1) varmista nimiavaruus
+  var SG = (window.SG = window.SG || {});
+
+  // 2) valitse *se* oikea funktio jonka haluat olevan “virallinen”
+  // Vaihda tähän se oikea toteutusfunktio, joka sinulla oikeasti on:
+  // esim. openSearchPanel, startSearchPanel, toggleSearchPanel, initSearchPanel...
+  var impl =
+    (typeof openSearchPanel === "function" && openSearchPanel) ||
+    (typeof startSearchPanel === "function" && startSearchPanel) ||
+    (typeof toggleSearchPanel === "function" && toggleSearchPanel) ||
+    (typeof searchPanel === "function" && searchPanel) ||
+    null;
+
+  if (!impl) {
+    console.warn("SG: SearchPanel implementation not found. Check function name.");
+    return;
+  }
+
+  // 3) Virallinen kutsu
+  SG.searchPanel = impl;
+
+  // 4) Yhteensopivuus vanhoihin kutsuihin (nämä estävät “not defined” -virheet)
+  window.searchPanel      = impl;
+  window.openSearchPanel  = impl;
+  window.startSearchPanel = impl;
+  window.toggleSearchPanel = impl;
+
+  console.log("SG: searchPanel wired ->", impl.name || "(anonymous)");
+})();
