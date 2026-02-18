@@ -198,7 +198,7 @@ var input = document.getElementById("searchInput");
 })();
 
 function searchPanel() {
-
+alert("tulip");
     const searchMode = localStorage.getItem("searchPanel");
         if (searchMode === "searchOn") {
             localStorage.setItem("searchPanel","searchOff");  
@@ -206,7 +206,9 @@ function searchPanel() {
         } 
         else {
         localStorage.setItem("searchPanel","searchOn");
-            document.getElementById("SearchPanel").style.display = "flex";}
+            document.getElementById("SearchPanel").style.display = "flex";
+        alert("flex");
+        }
     }
 
 
