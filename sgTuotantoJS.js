@@ -6,8 +6,7 @@
 // Posted by brut65, modified by community. See post 'Timeline' for change history
 // Retrieved 2026-02-05, License - CC BY-SA 4.0
 
-/* =========================================================
-   Yleiset toiminnot (dark mode, scroll, menu)  ========================================================= */
+// Dark
 
 function darkFunction() {
   var currentMode = localStorage.getItem("modeIS");
