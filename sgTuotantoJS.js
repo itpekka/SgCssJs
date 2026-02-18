@@ -8,6 +8,17 @@
 
 
 //   Yleiset toiminnot (dark mode, scroll, menu)  
+    
+function searchPanel() {
+        var searchMode = localStorage.getItem("searchPanel");
+        if (searchMode === "searchOn") {
+            localStorage.setItem("searchPanel","searchOff");  
+            endSearch();
+        } 
+        else {
+        localStorage.setItem("searchPanel","searchOn");
+            document.getElementById("SearchPanel").style.display = "flex";}
+    }
 
 function darkFunction() {
   var currentMode = localStorage.getItem("modeIS");
@@ -38,17 +49,6 @@ function displayFunction() {
 function scrollFunction() {
   // tyhjä
 }
-
-function searchPanel() {
-        var searchMode = localStorage.getItem("searchPanel");
-        if (searchMode === "searchOn") {
-            localStorage.setItem("searchPanel","searchOff");  
-            endSearch();
-        } 
-        else {
-        localStorage.setItem("searchPanel","searchOn");
-            document.getElementById("SearchPanel").style.display = "flex";}
-    }
 
 function startSearch() {
   var inputEl = document.getElementById("searchInput");
