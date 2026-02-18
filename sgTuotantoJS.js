@@ -9,12 +9,14 @@
 // Dark
 
     function searchPanel() {
+        alert("sp");
         const searchMode = localStorage.getItem("searchPanel");
         if (searchMode === "searchOn") {
             localStorage.setItem("searchPanel","searchOff");  
             endSearch();
         } 
         else {
+            alert("show");
         localStorage.setItem("searchPanel","searchOn");
             document.getElementById("SearchPanel").style.display = "flex";}
     }
