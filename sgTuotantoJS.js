@@ -185,6 +185,18 @@ var input = document.getElementById("searchInput");
   });
 })();
 
+function searchPanel() {
+        const searchMode = localStorage.getItem("searchPanel");
+        if (searchMode === "searchOn") {
+            localStorage.setItem("searchPanel","searchOff");  
+            endSearch();
+        } 
+        else {
+        localStorage.setItem("searchPanel","searchOn");
+            document.getElementById("SearchPanel").style.display = "flex";}
+    }
+
+
 // ⌨️ manuaalinen syöttö → ENTER
 (function bindInputHandlers() {
   if (!input) return;
@@ -255,17 +267,6 @@ window.addEventListener("popstate", function () {
     if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
   });
 });
-
-function searchPanel() {
-        const searchMode = localStorage.getItem("searchPanel");
-        if (searchMode === "searchOn") {
-            localStorage.setItem("searchPanel","searchOff");  
-            endSearch();
-        } 
-        else {
-        localStorage.setItem("searchPanel","searchOn");
-            document.getElementById("SearchPanel").style.display = "flex";}
-    }
 
 function startSearch() {
   var inputEl = document.getElementById("searchInput");
