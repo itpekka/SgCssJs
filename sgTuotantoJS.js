@@ -39,7 +39,7 @@ function scrollFunction() {
   // tyhjä
 }
 
-(function initDefaultsSafe() {
+function initDefaultsSafe() {
   // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
   function apply() {
     if (!document.body) return;
@@ -66,9 +66,9 @@ function scrollFunction() {
   } else {
     apply();
   }
-})();
+};
 
-(function forceWhiteInEditor() {
+function forceWhiteInEditor() {
   function apply() {
     if (!document.body) return;
     if (document.getElementsByClassName("editor-padding").length > 0) {
@@ -83,7 +83,7 @@ function scrollFunction() {
   } else {
     apply();
   }
-})();
+};
 
 function submenuFunction() {
   var currentMode = localStorage.getItem("submenu");
@@ -108,7 +108,7 @@ function submenuFunction() {
   }
 }
 
-(function addDefaultClasses() {
+function addDefaultClasses() {
   function apply() {
     if (!document.body) return;
     var list = document.body.classList;
@@ -123,7 +123,7 @@ function submenuFunction() {
   } else {
     apply();
   }
-})();
+};
 
 function loadArticleClass() {
   if (!document.body) return;
@@ -174,7 +174,7 @@ var originalArticleHTML = null;
 var input = document.getElementById("searchInput");
 
 // 🛑 estä lomakkeen submit (ilman optional chainingia)
-(function bindFormSubmitGuard() {
+function bindFormSubmitGuard() {
   if (!input) return;
   var form = null;
   if (input.closest) form = input.closest("form");
@@ -183,10 +183,10 @@ var input = document.getElementById("searchInput");
   form.addEventListener("submit", function (e) {
     e.preventDefault();
   });
-})();
+};
 
 // ⌨️ manuaalinen syöttö → ENTER
-(function bindInputHandlers() {
+function bindInputHandlers() {
   if (!input) return;
 
   input.addEventListener("keydown", function (e) {
@@ -201,7 +201,7 @@ var input = document.getElementById("searchInput");
     // jos haluat automaattisen startSearchin, avaa tästä
     // if (input.value && input.value.replace(/^\s+|\s+$/g, "")) startSearch();
   });
-})();
+};
 
 document.addEventListener("DOMContentLoaded", function () {
   originalHTML = document.body ? document.body.innerHTML : null;
