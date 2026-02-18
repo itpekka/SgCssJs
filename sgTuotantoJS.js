@@ -39,6 +39,9 @@ function scrollFunction() {
   // tyhjä
 }
 
+</script>
+
+<script>
 (function initDefaultsSafe() {
   // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
   function apply() {
@@ -84,6 +87,9 @@ function scrollFunction() {
     apply();
   }
 })();
+
+</script>
+<script>
 
 function submenuFunction() {
   var currentMode = localStorage.getItem("submenu");
