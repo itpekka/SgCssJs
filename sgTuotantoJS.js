@@ -185,7 +185,8 @@ var input = document.getElementById("searchInput");
 })();
 
 function searchPanel() {
-        const searchMode = localStorage.getItem("searchPanel");
+alert("tuli");
+    const searchMode = localStorage.getItem("searchPanel");
         if (searchMode === "searchOn") {
             localStorage.setItem("searchPanel","searchOff");  
             endSearch();
