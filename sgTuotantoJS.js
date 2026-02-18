@@ -8,6 +8,17 @@
 
 // Dark
 
+    function searchPanel() {
+        const searchMode = localStorage.getItem("searchPanel");
+        if (searchMode === "searchOn") {
+            localStorage.setItem("searchPanel","searchOff");  
+            endSearch();
+        } 
+        else {
+        localStorage.setItem("searchPanel","searchOn");
+            document.getElementById("SearchPanel").style.display = "flex";}
+    }
+
 function darkFunction() {
   var currentMode = localStorage.getItem("modeIS");
   var list = document.body ? document.body.classList : null;
