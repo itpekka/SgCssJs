@@ -162,7 +162,7 @@
 <style>
     .background {
         background-color: var(--BackgroundColor) !important;
-    /*  background: var(--BackgroundColor) !important;  */
+        background: var(--BackgroundColor) !important; 
         color: var(--BackgroundColor) !important;
     }
 
