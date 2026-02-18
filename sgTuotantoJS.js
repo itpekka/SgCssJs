@@ -6,20 +6,8 @@
 // Posted by brut65, modified by community. See post 'Timeline' for change history
 // Retrieved 2026-02-05, License - CC BY-SA 4.0
 
-// Dark
 
-    function searchPanel() {
-        alert("sp");
-        const searchMode = localStorage.getItem("searchPanel");
-        if (searchMode === "searchOn") {
-            localStorage.setItem("searchPanel","searchOff");  
-            endSearch();
-        } 
-        else {
-            alert("show");
-        localStorage.setItem("searchPanel","searchOn");
-            document.getElementById("SearchPanel").style.display = "flex";}
-    }
+//   Yleiset toiminnot (dark mode, scroll, menu)  
 
 function darkFunction() {
   var currentMode = localStorage.getItem("modeIS");
@@ -197,21 +185,6 @@ var input = document.getElementById("searchInput");
   });
 })();
 
-function searchPanel() {
-alert("tulip");
-    const searchMode = localStorage.getItem("searchPanel");
-        if (searchMode === "searchOn") {
-            localStorage.setItem("searchPanel","searchOff");  
-            endSearch();
-        } 
-        else {
-        localStorage.setItem("searchPanel","searchOn");
-            document.getElementById("SearchPanel").style.display = "flex";
-        alert("flex");
-        }
-    }
-
-
 // ⌨️ manuaalinen syöttö → ENTER
 (function bindInputHandlers() {
   if (!input) return;
@@ -266,7 +239,7 @@ document.addEventListener("click", function (e) {
   requestAnimationFrame(function () {
     var target = document.getElementById(hash);
     if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
-  });
+    });
 });
 
 window.addEventListener("popstate", function () {
@@ -280,8 +253,19 @@ window.addEventListener("popstate", function () {
   requestAnimationFrame(function () {
     var target = document.getElementById(paneId);
     if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
-  });
+    });
 });
+
+function searchPanel() {
+        const searchMode = localStorage.getItem("searchPanel");
+        if (searchMode === "searchOn") {
+            localStorage.setItem("searchPanel","searchOff");  
+            endSearch();
+        } 
+        else {
+        localStorage.setItem("searchPanel","searchOn");
+            document.getElementById("SearchPanel").style.display = "flex";}
+    }
 
 function startSearch() {
   var inputEl = document.getElementById("searchInput");
