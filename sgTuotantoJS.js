@@ -39,224 +39,6 @@ function scrollFunction() {
   // tyhjä
 }
 
-(function initDefaultsSafe() {
-  // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
-  function apply() {
-    if (!document.body) return;
-
-    var list = document.body.classList;
-
-    if (localStorage.getItem("modeIS") === "dark-mode") {
-      list.remove("white-mode");
-      list.add("dark-mode");
-    } else {
-      list.remove("dark-mode");
-      list.add("white-mode");
-    }
-
-    // resetoi searchPanel-tila
-    try {
-      localStorage.removeItem("searchPanel");
-      localStorage.setItem("searchPanel", "searchOff");
-    } catch (e) {}
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", apply);
-  } else {
-    apply();
-  }
-})();
-
-(function forceWhiteInEditor() {
-  function apply() {
-    if (!document.body) return;
-    if (document.getElementsByClassName("editor-padding").length > 0) {
-      var list = document.body.classList;
-      list.remove("dark-mode");
-      list.add("white-mode");
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", apply);
-  } else {
-    apply();
-  }
-})();
-
-
-function submenuFunction() {
-  var currentMode = localStorage.getItem("submenu");
-  var list = document.body ? document.body.classList : null;
-  if (!list) return;
-
-  if (currentMode === "mobile-menu-nobar") {
-    list.remove("mobile-menu-nobar");
-    list.remove("search-theme");
-    list.add("mobile-menu-showbar");
-    list.add("mobile-noheader-text");
-    localStorage.setItem("submenu", "mobile-menu-showbar");
-    displayFunction();
-  } else {
-    list.remove("mobile-menu-showbar");
-    list.remove("mobile-menu-nobar");
-    list.remove("search-theme");
-    list.add("mobile-menu-showbar");
-    list.add("mobile-noheader-text");
-    localStorage.setItem("submenu", "mobile-menu-nobar");
-    displayFunction();
-  }
-}
-
-(function addDefaultClasses() {
-  function apply() {
-    if (!document.body) return;
-    var list = document.body.classList;
-    list.add("mobile-menu-nobar");
-    list.add("mobile-menu-look");
-    list.add("home-icon");
-    list.add("no-category-events");
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", apply);
-  } else {
-    apply();
-  }
-})();
-
-function loadArticleClass() {
-  if (!document.body) return;
-  var style = window.getComputedStyle(document.body);
-  var luokat = (style.getPropertyValue("--articleClass") || "").replace(/^\s+|\s+$/g, "");
-  if (!luokat) return;
-
-  // jos useita luokkia, lisää yksi kerrallaan
-  var parts = luokat.split(/\s+/);
-  for (var i = 0; i < parts.length; i++) {
-    if (parts[i]) document.body.classList.add(parts[i]);
-  }
-}
-
-function replaceFunction() {
-  var element = document.getElementById("Kalenteri");
-  if (!element) return;
-
-  element.innerHTML = element.innerHTML.replace(/Golfkoulu/g, "Tehokurssit");
-}
-
-/* =========================================================
-   iOS-tunnistus (editor-safe)
-   ========================================================= */
-
-var isIOS = false;
-try {
-  var ua = navigator.userAgent || "";
-  isIOS = (ua.indexOf("iPad") > -1) || (ua.indexOf("iPhone") > -1) || (ua.indexOf("iPod") > -1);
-} catch (e) {
-  isIOS = false;
-}
-
-try {
-  localStorage.setItem("searchPanel", "searchOff");
-} catch (e) {}
-
-/* =========================================================
-   Search panel -tila
-   ========================================================= */
-
-var matches = [];
-var currentIndex = -1;
-var originalHTML = null;        // jos tarvitset myöhemmin
-var searchPanelActive = false;  // jos käytät ulko-klikkausta
-var originalArticleHTML = null;
-
-var input = document.getElementById("searchInput");
-
-// 🛑 estä lomakkeen submit (ilman optional chainingia)
-(function bindFormSubmitGuard() {
-  if (!input) return;
-  var form = null;
-  if (input.closest) form = input.closest("form");
-  if (!form) return;
-
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-  });
-})();
-
-// ⌨️ manuaalinen syöttö → ENTER
-(function bindInputHandlers() {
-  if (!input) return;
-
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.keyCode === 13) {
-      e.preventDefault();
-      startSearch();
-    }
-  });
-
-  // 📋 datalist-valinta (ei käytössä startSearch:ille tässä versiossa)
-  input.addEventListener("change", function () {
-    // jos haluat automaattisen startSearchin, avaa tästä
-    // if (input.value && input.value.replace(/^\s+|\s+$/g, "")) startSearch();
-  });
-})();
-
-document.addEventListener("DOMContentLoaded", function () {
-  originalHTML = document.body ? document.body.innerHTML : null;
-
-  var article = document.getElementById("article");
-  if (article) originalArticleHTML = article.innerHTML;
-});
-
-document.addEventListener("DOMContentLoaded", function() {
-    injectSearchPanel();
-});
-
-
-document.addEventListener("click", function (e) {
-  if (!e || !e.target) return;
-  if (!e.target.closest) return;
-
-  var btn = e.target.closest(".tabclick");
-  if (!btn) return;
-
-  var href = btn.getAttribute("href");
-  if (!href || href.indexOf("#") === -1) return;
-
-  var hash = href.split("#")[1];
-  if (!hash) return;
-
-  e.preventDefault(); // ⬅️ TÄMÄ ON PAKOLLINEN
-
-  activateTabByPaneId(hash);
-
-  try {
-    history.pushState({ tab: hash }, "", "#" + hash);
-  } catch (err) {}
-
-  requestAnimationFrame(function () {
-    var target = document.getElementById(hash);
-    if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
-    });
-});
-
-window.addEventListener("popstate", function () {
-  var h = location.hash || "";
-  if (!h) return;
-  if (h.charAt(0) !== "#") h = "#" + h;
-
-  var paneId = h.slice(1);
-  activateTabByPaneId(paneId);
-
-  requestAnimationFrame(function () {
-    var target = document.getElementById(paneId);
-    if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
-    });
-});
-
 function searchPanel() {
         var searchMode = localStorage.getItem("searchPanel");
         if (searchMode === "searchOn") {
@@ -878,6 +660,226 @@ function injectSearchPanel() {
     document.getElementById("closeBtn").addEventListener("click", endSearch);
 }
 
+(function initDefaultsSafe() {
+  // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
+  function apply() {
+    if (!document.body) return;
+
+    var list = document.body.classList;
+
+    if (localStorage.getItem("modeIS") === "dark-mode") {
+      list.remove("white-mode");
+      list.add("dark-mode");
+    } else {
+      list.remove("dark-mode");
+      list.add("white-mode");
+    }
+
+    // resetoi searchPanel-tila
+    try {
+      localStorage.removeItem("searchPanel");
+      localStorage.setItem("searchPanel", "searchOff");
+    } catch (e) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
+
+(function forceWhiteInEditor() {
+  function apply() {
+    if (!document.body) return;
+    if (document.getElementsByClassName("editor-padding").length > 0) {
+      var list = document.body.classList;
+      list.remove("dark-mode");
+      list.add("white-mode");
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
+
+
+function submenuFunction() {
+  var currentMode = localStorage.getItem("submenu");
+  var list = document.body ? document.body.classList : null;
+  if (!list) return;
+
+  if (currentMode === "mobile-menu-nobar") {
+    list.remove("mobile-menu-nobar");
+    list.remove("search-theme");
+    list.add("mobile-menu-showbar");
+    list.add("mobile-noheader-text");
+    localStorage.setItem("submenu", "mobile-menu-showbar");
+    displayFunction();
+  } else {
+    list.remove("mobile-menu-showbar");
+    list.remove("mobile-menu-nobar");
+    list.remove("search-theme");
+    list.add("mobile-menu-showbar");
+    list.add("mobile-noheader-text");
+    localStorage.setItem("submenu", "mobile-menu-nobar");
+    displayFunction();
+  }
+}
+
+(function addDefaultClasses() {
+  function apply() {
+    if (!document.body) return;
+    var list = document.body.classList;
+    list.add("mobile-menu-nobar");
+    list.add("mobile-menu-look");
+    list.add("home-icon");
+    list.add("no-category-events");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
+
+function loadArticleClass() {
+  if (!document.body) return;
+  var style = window.getComputedStyle(document.body);
+  var luokat = (style.getPropertyValue("--articleClass") || "").replace(/^\s+|\s+$/g, "");
+  if (!luokat) return;
+
+  // jos useita luokkia, lisää yksi kerrallaan
+  var parts = luokat.split(/\s+/);
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i]) document.body.classList.add(parts[i]);
+  }
+}
+
+function replaceFunction() {
+  var element = document.getElementById("Kalenteri");
+  if (!element) return;
+
+  element.innerHTML = element.innerHTML.replace(/Golfkoulu/g, "Tehokurssit");
+}
+
+/* =========================================================
+   iOS-tunnistus (editor-safe)
+   ========================================================= */
+
+var isIOS = false;
+try {
+  var ua = navigator.userAgent || "";
+  isIOS = (ua.indexOf("iPad") > -1) || (ua.indexOf("iPhone") > -1) || (ua.indexOf("iPod") > -1);
+} catch (e) {
+  isIOS = false;
+}
+
+try {
+  localStorage.setItem("searchPanel", "searchOff");
+} catch (e) {}
+
+/* =========================================================
+   Search panel -tila
+   ========================================================= */
+
+var matches = [];
+var currentIndex = -1;
+var originalHTML = null;        // jos tarvitset myöhemmin
+var searchPanelActive = false;  // jos käytät ulko-klikkausta
+var originalArticleHTML = null;
+
+var input = document.getElementById("searchInput");
+
+// 🛑 estä lomakkeen submit (ilman optional chainingia)
+(function bindFormSubmitGuard() {
+  if (!input) return;
+  var form = null;
+  if (input.closest) form = input.closest("form");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+  });
+})();
+
+// ⌨️ manuaalinen syöttö → ENTER
+(function bindInputHandlers() {
+  if (!input) return;
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      e.preventDefault();
+      startSearch();
+    }
+  });
+
+  // 📋 datalist-valinta (ei käytössä startSearch:ille tässä versiossa)
+  input.addEventListener("change", function () {
+    // jos haluat automaattisen startSearchin, avaa tästä
+    // if (input.value && input.value.replace(/^\s+|\s+$/g, "")) startSearch();
+  });
+})();
+
+document.addEventListener("DOMContentLoaded", function () {
+  originalHTML = document.body ? document.body.innerHTML : null;
+
+  var article = document.getElementById("article");
+  if (article) originalArticleHTML = article.innerHTML;
+});
+
+document.addEventListener("DOMContentLoaded", function() {
+    injectSearchPanel();
+});
+
+
+document.addEventListener("click", function (e) {
+  if (!e || !e.target) return;
+  if (!e.target.closest) return;
+
+  var btn = e.target.closest(".tabclick");
+  if (!btn) return;
+
+  var href = btn.getAttribute("href");
+  if (!href || href.indexOf("#") === -1) return;
+
+  var hash = href.split("#")[1];
+  if (!hash) return;
+
+  e.preventDefault(); // ⬅️ TÄMÄ ON PAKOLLINEN
+
+  activateTabByPaneId(hash);
+
+  try {
+    history.pushState({ tab: hash }, "", "#" + hash);
+  } catch (err) {}
+
+  requestAnimationFrame(function () {
+    var target = document.getElementById(hash);
+    if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
+    });
+});
+
+window.addEventListener("popstate", function () {
+  var h = location.hash || "";
+  if (!h) return;
+  if (h.charAt(0) !== "#") h = "#" + h;
+
+  var paneId = h.slice(1);
+  activateTabByPaneId(paneId);
+
+  requestAnimationFrame(function () {
+    var target = document.getElementById(paneId);
+    if (target && target.scrollIntoView) target.scrollIntoView({ block: "start" });
+    });
+});
+
+
+
 /* =========================================================
    Export: Inline-HTML kutsuu näitä suoraan
    ========================================================= */
@@ -894,4 +896,15 @@ window.prevMatch = prevMatch;
 window.endSearch = endSearch;
 window.handleDatalistSelect = handleDatalistSelect;
 
+/* === SG aliases (compat) === */
+(function(){
+  try{
+    if (typeof window.searchPanel === "function") {
+      if (typeof window.openSearchPanel !== "function") window.openSearchPanel = window.searchPanel;
+      if (typeof window.startSearchPanel !== "function") window.startSearchPanel = window.searchPanel;
+      if (typeof window.toggleSearchPanel !== "function") window.toggleSearchPanel = window.searchPanel;
+      if (typeof window.searcPanel !== "function") window.searcPanel = window.searchPanel; // common typo support
+    }
+  } catch(e){}
+})();
 </script>
