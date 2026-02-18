@@ -893,36 +893,40 @@ window.prevMatch = prevMatch;
 window.endSearch = endSearch;
 window.handleDatalistSelect = handleDatalistSelect;
 
-</script>
 
-// --- SG PUBLIC API / ALIASES (pidä aina JS:n lopussa) ---
+// --- SG public API + backward compatible aliases ---
 (function () {
-  // 1) varmista nimiavaruus
-  var SG = (window.SG = window.SG || {});
+  window.SG = window.SG || {};
 
-  // 2) valitse *se* oikea funktio jonka haluat olevan “virallinen”
-  // Vaihda tähän se oikea toteutusfunktio, joka sinulla oikeasti on:
-  // esim. openSearchPanel, startSearchPanel, toggleSearchPanel, initSearchPanel...
+  // Etsi toteutus (lisää tähän listaan sun mahdolliset nimet)
   var impl =
-    (typeof openSearchPanel === "function" && openSearchPanel) ||
-    (typeof startSearchPanel === "function" && startSearchPanel) ||
-    (typeof toggleSearchPanel === "function" && toggleSearchPanel) ||
-    (typeof searchPanel === "function" && searchPanel) ||
+    (typeof window.searchPanel === "function" && window.searchPanel) ||
+    (typeof window.openSearchPanel === "function" && window.openSearchPanel) ||
+    (typeof window.startSearchPanel === "function" && window.startSearchPanel) ||
+    (typeof window.toggleSearchPanel === "function" && window.toggleSearchPanel) ||
+    (typeof window.enableSearchPanel === "function" && window.enableSearchPanel) ||
     null;
 
+  // Jos toteutus on paikallisessa scopessa (esim. function searchPanel() {...}),
+  // niin tämä kohta ei löydä sitä. Silloin lisää käsin:  impl = searchPanel;
+  // (ja pidä tämä palikka samassa scopessa missä searchPanel näkyy)
+
   if (!impl) {
-    console.warn("SG: SearchPanel implementation not found. Check function name.");
+    console.warn("SG: searchPanel implementation not found. Add impl = <yourFunctionName>;");
     return;
   }
 
-  // 3) Virallinen kutsu
-  SG.searchPanel = impl;
+  // virallinen
+  window.SG.searchPanel = impl;
 
-  // 4) Yhteensopivuus vanhoihin kutsuihin (nämä estävät “not defined” -virheet)
-  window.searchPanel      = impl;
-  window.openSearchPanel  = impl;
+  // aliakset vanhoille kutsuille
+  window.searchPanel = impl;
+  window.openSearchPanel = impl;
   window.startSearchPanel = impl;
   window.toggleSearchPanel = impl;
 
-  console.log("SG: searchPanel wired ->", impl.name || "(anonymous)");
+  console.log("SG: searchPanel wired to:", impl.name || "(anonymous)");
 })();
+
+
+</script>
