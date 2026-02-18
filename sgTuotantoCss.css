@@ -173,14 +173,13 @@
     #wrap .white {
         background: rgba(0, 0.01, 0, 0.01) ;
     }
-}
-</style>
 
-<style>
     .body-background {
         background-color: var(--BackgroundColor);
         background-image: linear-gradient(to bottom, var(--BackgroundColor), var(--BackgroundColor), var(--BackgroundColorEnd)) !important; 
- } </style>
+     } 
+
+</style>
 
 <style> /* 6.2.2025 */
     @media (min-width:1091px) {
