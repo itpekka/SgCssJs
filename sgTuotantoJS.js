@@ -1,4 +1,4 @@
-<!-- SCRIPT 22.2.26 klo 8 --->
+<!-- SCRIPT 23.2.26 klo 8 --->
 
 <script> 
 
@@ -492,7 +492,7 @@ function handleDatalistSelect(e) {
 
   startSearch();
 
-  if (isIOS) return;
+  if (isIOSsg) return;
 
   requestAnimationFrame(function () {
     try {
@@ -1070,14 +1070,12 @@ function scrollToWithOffset(el, offsetPx) {
 /* =========================================================
    iOS-tunnistus (editor-safe)
    ========================================================= */
-
-var isIOS = window.isIOS || (/*...*/);
-window.isIOS = isIOS;
+var isIOSsg = false;
 try {
   var ua = navigator.userAgent || "";
-  isIOS = (ua.indexOf("iPad") > -1) || (ua.indexOf("iPhone") > -1) || (ua.indexOf("iPod") > -1);
+  isIOSsg = (ua.indexOf("iPad") > -1) || (ua.indexOf("iPhone") > -1) || (ua.indexOf("iPod") > -1);
 } catch (e) {
-  isIOS = false;
+  isIOSsg = false;
 }
 
 try {
