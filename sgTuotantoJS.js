@@ -1071,7 +1071,8 @@ function scrollToWithOffset(el, offsetPx) {
    iOS-tunnistus (editor-safe)
    ========================================================= */
 
-var isIOS = false;
+var isIOS = window.isIOS || (/*...*/);
+window.isIOS = isIOS;
 try {
   var ua = navigator.userAgent || "";
   isIOS = (ua.indexOf("iPad") > -1) || (ua.indexOf("iPhone") > -1) || (ua.indexOf("iPod") > -1);
