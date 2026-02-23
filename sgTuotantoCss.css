@@ -1,5 +1,5 @@
 <!-- STYLET 23.2 klo 11 sgStyleChatMedia  --->
-<style>
+
     .white-mode {  
         --CurrentMode:"white-mode";                 /* Current background mode */
         --NextMode:"dark-mode";                     /* Next background mode */    
@@ -3496,4 +3496,4 @@
       }
     }
 
-</style>
+
