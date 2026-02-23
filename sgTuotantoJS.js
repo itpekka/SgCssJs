@@ -1,23 +1,372 @@
-<!-- SCRIPT 17.2.26 klo 18 --->
+<!-- SCRIPT 22.2.26 klo 8 --->
 
 <script> 
-    
-// Source - https://stackoverflow.com/q/70821769
-// Posted by brut65, modified by community. See post 'Timeline' for change history
-// Retrieved 2026-02-05, License - CC BY-SA 4.0
+
+// Alustukset - nämä toiminnot suoritetaan aina latauksen yhteydessä
+
+(function () {
+  var initializedFor = null;
+
+  function initOnce() {
+    var article = document.getElementById("article");
+    if (!article) return;
+
+    // estä tuplainit samaan DOM-instanssiin
+    if (initializedFor === article) return;
+    initializedFor = article;
+
+    // täällä: rakenna napit/paneeli, lisää eventit jne.
+    // console.log("SG init on article", Date.now());
+  }
+
+  // aja heti ja vielä vähän myöhemmin (varmistus)
+  initOnce();
+  setTimeout(initOnce, 500);
+  setTimeout(initOnce, 2500);
+
+  // seuraa DOM-muutoksia ja init uudelleen tarvittaessa
+  var mo = new MutationObserver(function () {
+    initOnce();
+  });
+  mo.observe(document.documentElement, { childList: true, subtree: true });
+})();
+
+(function initDefaultsSafe() {
+  // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
+  function apply() {
+    if (!document.body) return;
+
+    var list = document.body.classList;
+
+    if (localStorage.getItem("modeIS") === "dark-mode") {
+      list.remove("white-mode");
+      list.add("dark-mode");
+    } else {
+      list.remove("dark-mode");
+      list.add("white-mode");
+    }
+
+    // resetoi searchPanel-tila
+    try {
+      localStorage.removeItem("searchPanel");
+      localStorage.setItem("searchPanel", "searchOff");
+    } catch (e) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
+
+(function forceWhiteInEditor() {
+  function apply() {
+    if (!document.body) return;
+    if (document.getElementsByClassName("editor-padding").length > 0) {
+      var list = document.body.classList;
+      list.remove("dark-mode");
+      list.add("white-mode");
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
 
 
-//   Yleiset toiminnot (dark mode, scroll, menu)  
+(function addDefaultClasses() {
+  function apply() {
+    if (!document.body) return;
+    var list = document.body.classList;
+    list.add("mobile-menu-nobar");
+    list.add("mobile-menu-look");
+    list.add("home-icon");
+    list.add("no-category-events");
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", apply);
+  } else {
+    apply();
+  }
+})();
+
+// 🛑 estä lomakkeen submit (ilman optional chainingia)
+
+(function bindFormSubmitGuard() {
+  if (!input) return;
+  var form = null;
+  if (input.closest) form = input.closest("form");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+  });
+})();
+
+// ⌨️ manuaalinen syöttö → ENTER
+(function bindInputHandlers() {
+  if (!input) return;
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.keyCode === 13) {
+      e.preventDefault();
+      startSearch();
+    }
+  });
+
+  // 📋 datalist-valinta (ei käytössä startSearch:ille tässä versiossa)
+  input.addEventListener("change", function () {
+    // jos haluat automaattisen startSearchin, avaa tästä
+    // if (input.value && input.value.replace(/^\s+|\s+$/g, "")) startSearch();
+  });
+})();
+
+// oman selauslistan käsittely
+
+(function () {
+
+  var INPUT_SELECTOR = ".search-panel .omainput, .omainput";
+  var DATALIST_ID = "searcList";
+  var MAX_ITEMS = 100;   // kuinka monta max näytetään
+
+  function qs(sel) { return document.querySelector(sel); }
+
+  function disableNative(input) {
+    if (!input) return;
+    if (input.getAttribute("list")) input.removeAttribute("list");
+    input.setAttribute("autocomplete", "off");
+    input.setAttribute("inputmode", "search");
+  }
+
+  function createBox() {
+    var box = document.getElementById("sg-datalist");
+    if (box) return box;
+
+    box = document.createElement("div");
+    box.id = "sg-datalist";
+
+    box.style.position = "fixed";
+    box.style.zIndex = "999999";
+    box.style.maxHeight = "60vh";
+    box.style.overflowY = "auto";
+    box.style.webkitOverflowScrolling = "touch";
+    box.style.display = "none";
+
+    document.body.appendChild(box);
+    return box;
+  }
+
+  function readOptions() {
+    var dl = document.getElementById(DATALIST_ID);
+    if (!dl) return [];
+
+    var opts = dl.querySelectorAll("option");
+    var out = [];
+
+    for (var i=0;i<opts.length;i++) {
+      var v = opts[i].value || "";
+      var kw = opts[i].getAttribute("data-keywords") || "";
+      out.push({
+        value: v,
+        hay: (v + " " + kw).toLowerCase()
+      });
+    }
+
+    return out;
+  }
+
+  function dispatch(el,name) {
+    try {
+      el.dispatchEvent(new Event(name,{bubbles:true}));
+    } catch(e) {
+      var ev=document.createEvent("Event");
+      ev.initEvent(name,true,true);
+      el.dispatchEvent(ev);
+    }
+  }
+
+  function dispatchEnter(el) {
+    try {
+      el.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",keyCode:13,which:13,bubbles:true}));
+      el.dispatchEvent(new KeyboardEvent("keyup",{key:"Enter",keyCode:13,which:13,bubbles:true}));
+    } catch(e){}
+  }
+
+  function startSearch() {
+    if (window.searchStart) return window.searchStart();
+    if (window.startSearchPanel) return window.startSearchPanel();
+    if (window.openSearchPanel) return window.openSearchPanel();
+  }
+
+  function bind(input) {
+
+    if (input.__sgBound) return;
+    input.__sgBound=true;
+
+    disableNative(input);
+
+    var box=createBox();
+    var all=readOptions();
+
+    var open=false;
+    var items=[];
+
+    function close() {
+      box.style.display="none";
+      open=false;
+    }
+
+    function place() {
+      var panel = input.closest(".search-panel");
+      if (!panel) panel = input;
+
+      var pr = panel.getBoundingClientRect();
+      var ir = input.getBoundingClientRect();
+
+      box.style.left  = (pr.left + 8) + "px";
+      box.style.width = Math.max(0, pr.width - 16) + "px";
+      box.style.top   = (ir.bottom + 10) + "px";
+    }
+
+    function render(text) {
+
+      disableNative(input);
+
+      var f=(text||"").toLowerCase();
+
+      items=[];
+
+      for (var i=0;i<all.length;i++) {
+        if (!f || all[i].hay.indexOf(f)>=0)
+          items.push(all[i].value);
+        if (items.length>=MAX_ITEMS) break;
+      }
+
+      if (!items.length) { close(); return; }
+
+      var html="";
+
+      for (var i=0;i<items.length;i++)
+        html+='<div class="sg-datalist__item" data-i="'+i+'">'+items[i]+'</div>';
+
+      box.innerHTML=html;
+
+      place();
+
+      box.style.display="block";
+      open=true;
+    }
+
+    function pick(i) {
+
+      input.value=items[i];
+
+      close();
+
+      dispatch(input,"input");
+      dispatch(input,"change");
+
+      dispatchEnter(input);
+
+      startSearch();
+
+      setTimeout(function(){input.blur();},50);
+    }
+
+    // desktop click
+    box.addEventListener("mousedown",function(e){
+
+      var el=e.target.closest(".sg-datalist__item");
+      if (!el) return;
+
+      e.preventDefault();
+
+      pick(parseInt(el.dataset.i));
+
+    });
+
+    // mobile scroll-safe tap
+    var startY=0,moved=false,target=null;
+
+    box.addEventListener("touchstart",function(e){
+      moved=false;
+      target=e.target;
+      startY=e.touches[0].clientY;
+    },{passive:true});
+
+    box.addEventListener("touchmove",function(e){
+      if (Math.abs(e.touches[0].clientY-startY)>8)
+        moved=true;
+    },{passive:true});
+
+    box.addEventListener("touchend",function(e){
+
+      if (moved) return;
+
+      var el=target.closest(".sg-datalist__item");
+      if (!el) return;
+
+      e.preventDefault();
+
+      pick(parseInt(el.dataset.i));
+
+    });
+
+    input.addEventListener("focus",function(){render(input.value);});
+    input.addEventListener("input",function(){render(input.value);});
+    input.addEventListener("blur",function(){setTimeout(close,150);});
+
+  }
+
+  function init() {
+
+    var input=qs(INPUT_SELECTOR);
+
+    if (!input) return false;
+
+    bind(input);
+
+    return true;
+  }
+
+  // init now + retry (Wise render)
+  init();
+  setTimeout(init,300);
+  setTimeout(init,1000);
+  setTimeout(init,3000);
+
+  new MutationObserver(init)
+    .observe(document.documentElement,{childList:true,subtree:true});
+
+})();
+
+// sen loppu
+
+
+//   Yleiset toiminnot (dark mode, scroll, menu, search - näillä oma ulkoinen button)  
     
 function searchPanel() {
-        var searchMode = localStorage.getItem("searchPanel");
-        if (searchMode === "searchOn") {
-            localStorage.setItem("searchPanel","searchOff");  
-            endSearch();
+    var searchMode = localStorage.getItem("searchPanel");
+    if (searchMode === "searchOn") {
+        localStorage.setItem("searchPanel","searchOff");  
+        endSearch();
         } 
-        else {
+    else {
         localStorage.setItem("searchPanel","searchOn");
-            document.getElementById("SearchPanel").style.display = "flex";}
+        document.getElementById("SearchPanel").style.display = "flex";
+
+        // avaa lista varmasti (2 framea varmistaa että layout on laskettu)
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+            if (window.SG_OpenSearchList) window.SG_OpenSearchList();
+            });
+        });
+        }
     }
 
 function darkFunction() {
@@ -46,11 +395,33 @@ function displayFunction() {
   if (element && element.scrollIntoView) element.scrollIntoView();
 }
 
-function scrollFunction() {
-  // tyhjä
+function submenuFunction() {
+  var currentMode = localStorage.getItem("submenu");
+  var list = document.body ? document.body.classList : null;
+  if (!list) return;
+
+  if (currentMode === "mobile-menu-nobar") {
+    list.remove("mobile-menu-nobar");
+    list.remove("search-theme");
+    list.add("mobile-menu-showbar");
+    list.add("mobile-noheader-text");
+    localStorage.setItem("submenu", "mobile-menu-showbar");
+    displayFunction();
+  } else {
+    list.remove("mobile-menu-showbar");
+    list.remove("mobile-menu-nobar");
+    list.remove("search-theme");
+    list.add("mobile-menu-showbar");
+    list.add("mobile-noheader-text");
+    localStorage.setItem("submenu", "mobile-menu-nobar");
+    displayFunction();
+  }
 }
 
+// ulkoisista funktioista kutsutus alifunkiot
+
 function startSearch() {
+    
   var inputEl = document.getElementById("searchInput");
   if (!inputEl) {
     return;
@@ -96,9 +467,11 @@ function startSearch() {
   requestAnimationFrame(function () {
     nextMatch();
   });
+    
 }
 
 function handleDatalistSelect(e) {
+    
   if (!e || !e.target) return;
   var inp = e.target;
 
@@ -130,6 +503,7 @@ function handleDatalistSelect(e) {
 }
 
 function nextMatch() {
+    
   if (!matches || !matches.length) return;
 
   // poista vanha current
@@ -190,6 +564,7 @@ function nextMatch() {
 }
 
 function prevMatch() {
+    
   if (!matches || !matches.length) return;
 
   var currents = document.querySelectorAll("mark.search-highlight.current");
@@ -246,6 +621,7 @@ function prevMatch() {
 }
 
 function endSearch() {
+    
   var article = document.getElementById("article");
   if (article) clearSearchArtifacts(article);   // ✅ tärkein
 
@@ -266,6 +642,7 @@ function endSearch() {
 }
 
 function updateCounter() {
+    
   var counter = document.getElementById("counter");
   if (!counter) return;
 
@@ -294,6 +671,7 @@ function updateCounter() {
 }
 
 function indexOfNode(arr, node) {
+    
   for (var i = 0; i < arr.length; i++) {
     if (arr[i] === node) return i;
   }
@@ -326,6 +704,7 @@ function isElementVisible(el) {
 }
 
 function removeAllMarks(root) {
+    
   root = root || document;
   var list = root.querySelectorAll("mark");
   for (var i = 0; i < list.length; i++) {
@@ -339,6 +718,7 @@ function removeAllMarks(root) {
 }
 
 function clearSearch() {
+    
   var article = document.getElementById("article");
   if (!article) return;
 
@@ -485,7 +865,7 @@ function highlightTermAppend(root, term) {
         if (parent.closest && parent.closest("mark")) return NodeFilter.FILTER_REJECT;
 
         // älä koske näihin
-        if (parent.closest && parent.closest("script,style,iframe,.article-menu-button,.element-survey,form,input,textarea,select,option,button,label,.ala-nayta,.no-search")) {
+        if (parent.closest && parent.closest("script,style,iframe,.article-menu-button,.element-survey,form,input,textarea,select,option,button,label,.ala-nayta,.no-search,.article-date, .article-aligned")) {
           return NodeFilter.FILTER_REJECT;
         }
 
@@ -660,92 +1040,6 @@ function injectSearchPanel() {
     document.getElementById("closeBtn").addEventListener("click", endSearch);
 }
 
-(function initDefaultsSafe() {
-  // Voi olla että script ajetaan ennen <body>:ä, joten varmistetaan
-  function apply() {
-    if (!document.body) return;
-
-    var list = document.body.classList;
-
-    if (localStorage.getItem("modeIS") === "dark-mode") {
-      list.remove("white-mode");
-      list.add("dark-mode");
-    } else {
-      list.remove("dark-mode");
-      list.add("white-mode");
-    }
-
-    // resetoi searchPanel-tila
-    try {
-      localStorage.removeItem("searchPanel");
-      localStorage.setItem("searchPanel", "searchOff");
-    } catch (e) {}
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", apply);
-  } else {
-    apply();
-  }
-})();
-
-(function forceWhiteInEditor() {
-  function apply() {
-    if (!document.body) return;
-    if (document.getElementsByClassName("editor-padding").length > 0) {
-      var list = document.body.classList;
-      list.remove("dark-mode");
-      list.add("white-mode");
-    }
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", apply);
-  } else {
-    apply();
-  }
-})();
-
-
-function submenuFunction() {
-  var currentMode = localStorage.getItem("submenu");
-  var list = document.body ? document.body.classList : null;
-  if (!list) return;
-
-  if (currentMode === "mobile-menu-nobar") {
-    list.remove("mobile-menu-nobar");
-    list.remove("search-theme");
-    list.add("mobile-menu-showbar");
-    list.add("mobile-noheader-text");
-    localStorage.setItem("submenu", "mobile-menu-showbar");
-    displayFunction();
-  } else {
-    list.remove("mobile-menu-showbar");
-    list.remove("mobile-menu-nobar");
-    list.remove("search-theme");
-    list.add("mobile-menu-showbar");
-    list.add("mobile-noheader-text");
-    localStorage.setItem("submenu", "mobile-menu-nobar");
-    displayFunction();
-  }
-}
-
-(function addDefaultClasses() {
-  function apply() {
-    if (!document.body) return;
-    var list = document.body.classList;
-    list.add("mobile-menu-nobar");
-    list.add("mobile-menu-look");
-    list.add("home-icon");
-    list.add("no-category-events");
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", apply);
-  } else {
-    apply();
-  }
-})();
 
 function loadArticleClass() {
   if (!document.body) return;
@@ -766,6 +1060,12 @@ function replaceFunction() {
 
   element.innerHTML = element.innerHTML.replace(/Golfkoulu/g, "Tehokurssit");
 }
+
+function scrollToWithOffset(el, offsetPx) {
+  var y = el.getBoundingClientRect().top + window.pageYOffset - offsetPx;
+  window.scrollTo({ top: y, behavior: "smooth" });
+}
+ 
 
 /* =========================================================
    iOS-tunnistus (editor-safe)
@@ -795,35 +1095,8 @@ var originalArticleHTML = null;
 
 var input = document.getElementById("searchInput");
 
-// 🛑 estä lomakkeen submit (ilman optional chainingia)
-(function bindFormSubmitGuard() {
-  if (!input) return;
-  var form = null;
-  if (input.closest) form = input.closest("form");
-  if (!form) return;
 
-  form.addEventListener("submit", function (e) {
-    e.preventDefault();
-  });
-})();
-
-// ⌨️ manuaalinen syöttö → ENTER
-(function bindInputHandlers() {
-  if (!input) return;
-
-  input.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" || e.keyCode === 13) {
-      e.preventDefault();
-      startSearch();
-    }
-  });
-
-  // 📋 datalist-valinta (ei käytössä startSearch:ille tässä versiossa)
-  input.addEventListener("change", function () {
-    // jos haluat automaattisen startSearchin, avaa tästä
-    // if (input.value && input.value.replace(/^\s+|\s+$/g, "")) startSearch();
-  });
-})();
+// EventListener toiminnot
 
 document.addEventListener("DOMContentLoaded", function () {
   originalHTML = document.body ? document.body.innerHTML : null;
@@ -878,6 +1151,23 @@ window.addEventListener("popstate", function () {
     });
 });
 
+window.SG_OpenSearchList = function () {
+  try {
+    // etsi aina uudelleen, koska Wise voi vaihtaa elementin julkaisussa
+    var input = document.querySelector(".search-panel .omainput, .omainput");
+    if (!input) return false;
+
+    // pakota fokus ja input-eventti -> meidän render() reagoi
+    input.focus();
+
+    // jos input-eventti ei laukaise, laukaistaan itse
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
 
 
 /* =========================================================
@@ -897,14 +1187,5 @@ window.endSearch = endSearch;
 window.handleDatalistSelect = handleDatalistSelect;
 
 /* === SG aliases (compat) === */
-(function(){
-  try{
-    if (typeof window.searchPanel === "function") {
-      if (typeof window.openSearchPanel !== "function") window.openSearchPanel = window.searchPanel;
-      if (typeof window.startSearchPanel !== "function") window.startSearchPanel = window.searchPanel;
-      if (typeof window.toggleSearchPanel !== "function") window.toggleSearchPanel = window.searchPanel;
-      if (typeof window.searcPanel !== "function") window.searcPanel = window.searchPanel; // common typo support
-    }
-  } catch(e){}
-})();
+
 </script>
