@@ -1,6 +1,6 @@
 <!-- SCRIPT 23.2.26 klo 8 --->
 
-<script>
+
 
 // Alustukset - nämä toiminnot suoritetaan aina latauksen yhteydessä
 
@@ -2348,4 +2348,4 @@ window.handleDatalistSelect = handleDatalistSelect;
 
 /* === SG aliases (compat) === */
 
-  </script>
+ 
